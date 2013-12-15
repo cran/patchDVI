@@ -64,7 +64,7 @@ function(file, pdf = FALSE, clean = FALSE, quiet = FALSE,
         on.exit(Sys.unsetenv("TEXINPUTS"))
         otexinputs <- "."
     } else on.exit(Sys.setenv(TEXINPUTS = otexinputs))
-    Sys.setenv(TEXINPUTS = paste(otexinputs, texinputs, sep = envSep))
+    Sys.setenv(TEXINPUTS = paste(otexinputs, texinputs, "", sep = envSep))
     bibinputs <- Sys.getenv("BIBINPUTS", unset = NA)
     if(is.na(bibinputs)) {
         on.exit(Sys.unsetenv("BIBINPUTS"), add = TRUE)
@@ -108,41 +108,14 @@ function(file, pdf = FALSE, clean = FALSE, quiet = FALSE,
         cmd <- paste(shQuote(texi2dvi), opt_quiet, opt_pdf, opt_links,
                      shQuote(file), extra)
         if (!quiet) message(cmd, "\n")
-        system(cmd, intern=TRUE, ignore.stderr=TRUE)
-        msg <- ""
-        ## (La)TeX errors.
-        log <- paste(tools:::file_path_sans_ext(file), "log", sep = ".")
-        if(file_test("-f", log)) {
-            lines <- tools:::.get_LaTeX_errors_from_log_file(log)
-            if(length(lines))
-                msg <- paste(msg, "LaTeX errors:",
-                             paste(lines, collapse = "\n"),
-                             sep = "\n")
-        }
-        ## BibTeX errors.
-        ## These seem too common on some MikTeX versions, so don't treat
-        ## them too seriously
-        log <- paste(tools:::file_path_sans_ext(file), "blg", sep = ".")
-        if(file_test("-f", log)) {
-            lines <- tools:::.get_BibTeX_errors_from_blg_file(log)
-            if(length(lines))
-                message("BibTeX errors:",
-                             paste(lines, collapse = "\n"),
-                             sep = "\n")
-        }
-
-        if(nzchar(msg))
-            msg <- paste(gettextf("running 'texi2dvi' on '%s' failed", file),
-                         msg, "", sep = "\n")
+        consoleLog <- system(cmd, intern=TRUE, ignore.stderr=TRUE)
         if(clean) {
-            out_file <- paste(tools:::file_path_sans_ext(file), ext, sep = ".")
+            out_file <- paste(tools::file_path_sans_ext(file), ext, sep = ".")
             files <- list.files(all.files = TRUE) %w/o% c(".", "..",
                                                           out_file)
             file.remove(files[file_test("-nt", files, ".timestamp")])
         }
         file.remove(".timestamp")
-
-        if(nzchar(msg)) stop(msg, call. = FALSE, domain = NA)
     } else {
         ## Do not have Synctex-compatible texi2dvi or don't want to index
         ## Needed everywhere except for MiKTeX
@@ -154,7 +127,7 @@ function(file, pdf = FALSE, clean = FALSE, quiet = FALSE,
         else
             opt_links <- links
         texfile <- shQuote(file)
-        base <- tools:::file_path_sans_ext(file)
+        base <- tools::file_path_sans_ext(file)
         idxfile <- paste(base, ".idx", sep="")
         latex <- if(pdf) Sys.getenv("PDFLATEX", "pdflatex")
         else  Sys.getenv("LATEX", "latex")
@@ -162,8 +135,10 @@ function(file, pdf = FALSE, clean = FALSE, quiet = FALSE,
         makeindex <- Sys.getenv("MAKEINDEX", "makeindex")
         cmd <- paste(shQuote(latex), "-interaction=nonstopmode", opt_links, texfile)
         if (!quiet) message(cmd, "\n")
-        if(system(cmd))
-            stop(gettextf("unable to run '%s' on '%s'", latex, file),
+        consoleLog <- system(cmd, intern = TRUE)
+        status <- attr(consoleLog, "status")
+        if(!is.null(status) && status)
+            warning(gettextf("unable to run '%s' on '%s'", latex, file),
                  domain = NA)
         nmiss <- length(grep("^LaTeX Warning:.*Citation.*undefined",
                              readLines(paste(base, ".log", sep = ""))))
@@ -179,15 +154,18 @@ function(file, pdf = FALSE, clean = FALSE, quiet = FALSE,
                                   makeindex, idxfile),
                          domain = NA)
             }
-            paste(shQuote(latex), "-interaction=nonstopmode", opt_links, texfile)
+            cmd <- paste(shQuote(latex), "-interaction=nonstopmode", opt_links, texfile)
             if (!quiet) message(cmd, "\n")
-            if(system(cmd))
-                stop(gettextf("unable to run %s on '%s'", latex, file), domain = NA)
+	    consoleLog <- system(cmd, intern = TRUE)
+	    status <- attr(consoleLog, "status")
+            if(!is.null(status) && status)
+                warning(gettextf("unable to run %s on '%s'", latex, file), domain = NA)
             Log <- readLines(paste(base, ".log", sep = ""))
             nmiss <- length(grep("^LaTeX Warning:.*Citation.*undefined", Log))
             if(nmiss == nmiss_prev &&
                !length(grep("Rerun to get", Log)) ) break
         }
     }
+    invisible(consoleLog)
 }
 

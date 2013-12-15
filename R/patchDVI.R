@@ -1,12 +1,14 @@
 SweaveMiktex <- function(Rnw, 
                          main=outputname, 
                          cmd="texify",
-                         options="--tex-option=-c-style-errors --tex-option=--src-specials",
+                         options="--tex-option=-src-specials --tex-option=-interaction=nonstopmode",
                          includedir="--tex-option=--include-directory=",
                          stylepath=FALSE,
                          source.code=NULL,
                          make=1,
                          preview='yap "%s"',
+			 patchLog = TRUE,
+			 sleep = 0,
                          ...) {
     if (!is.null(source.code))
     	try(source(source.code, local=TRUE))
@@ -17,10 +19,18 @@ SweaveMiktex <- function(Rnw,
     cmd <- paste(cmd, " ", options, " ", includedir, Rtexinputs(),
                  " ", main, sep="")    	
     cat(cmd, "\n")
-    result <- system(cmd, intern = FALSE, show.output.on.console = TRUE)
-    if (result != 0) Sys.sleep(5)
+    consoleLog <- try(system(cmd, intern = TRUE))
+    status <- attr(consoleLog, "status")
+    if (patchLog && !inherits(consoleLog, "try-error")) {
+        tempLog <- tempfile(fileext = ".log")
+        writeLines(consoleLog, tempLog)
+        patchLog(tempLog)
+        consoleLog <- readLines(tempLog)
+    }
+    cat(consoleLog, sep = "\n")
+    if (!is.null(status) && status) Sys.sleep(sleep)
     dvi <- sub("\\.tex$", ".dvi", main, ignore.case = TRUE)
-    message(patchDVI(dvi))
+    message(patchDVI(dvi, patchLog = patchLog))
     if (!is.null(preview)) {
     	cmd <- sprintf(preview, dvi)
     	cat(cmd, "\n")
@@ -34,6 +44,7 @@ SweaveDVI <- function( Rnw, main=outputname,
                        make=1,
                        links=NULL,
                        preview=NULL,
+		       patchLog = TRUE,
                        ... ) {
     if (!is.null(source.code) && file.exists(source.code))
     	try(source(source.code, local=TRUE))
@@ -41,17 +52,22 @@ SweaveDVI <- function( Rnw, main=outputname,
     	outputname <- Rnw
     else
     	outputname <- SweaveAll(Rnw, make=make, ...)[1]
-    try(texi2dvi(main, pdf=FALSE, texinputs=texinputs, links=links))
+    consoleLog <- try(texi2dvi(main, pdf=FALSE, texinputs=texinputs, links=links))
+    if (patchLog && !inherits(consoleLog, "try-error")) {
+        tempLog <- tempfile(fileext = ".log")
+        writeLines(consoleLog, tempLog)
+        patchLog(tempLog)
+        consoleLog <- readLines(tempLog)
+    }
+    cat(consoleLog, sep = "\n")
     dvi <- sub("\\.tex$", ".dvi", main, ignore.case=TRUE)
-    message(patchDVI(dvi))
+    message(patchDVI(dvi, patchLog = patchLog))
     if (!is.null(preview)) {
     	cmd <- sprintf(preview, dvi)
     	cat(cmd, "\n")
     	system(cmd, wait=FALSE, invisible=FALSE)
     }    
 }
-
-
 
 readDVI <- function(f, show=c("bop", "special", "fntdef", "preamble")) {
     size <- file.info(f)$size
@@ -123,7 +139,7 @@ setDVIspecials <- function(f, newspecials, newname=f) {
     writeBin(bytes, con)
 }
 
-patchDVI <- function(f, newname=f) {
+patchDVI <- function(f, newname=f, patchLog = TRUE) {
     specials <- DVIspecials(f)
     
     concordind <- grep("^concordance:", specials)
@@ -151,6 +167,8 @@ patchDVI <- function(f, newname=f) {
     concords <- lapply(concords, parseConcord)
     names(concords) <- sapply(concords, function(x) x$oldname)
 
+    if (patchLog)
+    	patchLog(paste0(tools::file_path_sans_ext(f), ".log"), concords = concords)
 
     srcrefind <- grep("^src:", specials)
     srcrefs <- specials[srcrefind]
@@ -160,7 +178,7 @@ patchDVI <- function(f, newname=f) {
     # \input{file} doesn't put .tex on it
     noext <- !grepl("\\.", filenames)
     filenames[noext] <- paste(filenames[noext], ".tex", sep="")
-    filenames <- normalizePath(filenames)
+    filenames <- myNormalizePath(filenames)
     linenums <- as.integer(linenums)
     
     changed <- rep(FALSE, length(filenames))
@@ -168,7 +186,7 @@ patchDVI <- function(f, newname=f) {
     	n <- names(concords)[i]
     	ofs <- concords[[i]]$ofs
     	concord <- concords[[i]]$concord
-    	subset <- (filenames == normalizePath(n)) & (linenums > ofs) & (linenums <= ofs + length(concord))
+    	subset <- (filenames == myNormalizePath(n)) & (linenums > ofs) & (linenums <= ofs + length(concord))
     	linenums[subset] <- concord[linenums[subset] - ofs]
     	filenames[subset] <- concords[[i]]$newname
     	changed[subset] <- TRUE

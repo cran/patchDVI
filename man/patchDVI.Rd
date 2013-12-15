@@ -13,13 +13,16 @@ the previewer can send messages to editors to jump to the source
 corresponding to a location in the preview. 
 }
 \usage{
-patchDVI(f, newname=f)
-patchSynctex(f, newname=f, uncompress="pdftk \%s output \%s uncompress")
+patchDVI(f, newname = f, patchLog = TRUE)
+patchSynctex(f, newname=f, uncompress="pdftk \%s output \%s uncompress",
+	     fromDVI = NULL, patchLog = TRUE)
 }
 \arguments{
   \item{f}{ A character value giving the name of the .dvi or .synctex file to patch }
   \item{newname}{ Output will go to this file; by default to overwrite the original }
-  \item{uncompress}{ External command to uncompress a compressed PDF file. }
+  \item{patchLog}{ Whether to attempt to patch the \file{.log} file }
+  \item{uncompress}{ External command to uncompress a compressed PDF file }
+  \item{fromDVI}{ Name of DVI file in which to find concordance }
 }
 \details{
 This function works with \code{Sweave} with option \code{concordance=TRUE}
@@ -43,6 +46,8 @@ can be run from the command line, there's no need to keep an R session running (
 all work from within one session as well).  At some distant date in the future maybe
 the previewers will learn how to read the concordance info, and step 4 will no longer be 
 necessary.
+
+The \code{patchLog} option makes use of the new \code{\link{patchLog}} function.
 }
 \note{
 
@@ -81,6 +86,11 @@ uncompress utility.  The Latex commands
 \verb{\pdfcompresslevel=0\pdfobjcompresslevel=0} at the start
 of your document instruct \code{pdflatex} not to compress the file, but
 some Latex packages (e.g. beamer) will override these settings.
+
+If your workflow involves using \code{latex} and \code{dvipdfm}, then you will 
+need a recent enough version of \code{latex} that supports the \code{-synctex=1} 
+option, and then you can specify the name of the \file{.dvi} file
+in the \code{fromDVI} argument.
 
 This format is subject to change in future R releases.
 }
