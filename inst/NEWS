@@ -78,3 +78,10 @@ Quick initial releases.
       Added patchLog option to the Sweave* functions to call patchLog.
       Added "sleep" parameter to the Miktex Sweave* functions.
       
+1.9.1616:
+      Modified SweaveAll and patchSynctex to allow non-Sweave 
+      vignette support (aimed at knitr).
+      Added useknitr() and defSconcordance() functions for the same aim.
+      Improved Japanese language support, and updated the 
+      Japanese.Rnw vignette with the help of Prof. Haruhiko Okumura.
+      

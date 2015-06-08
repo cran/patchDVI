@@ -4,7 +4,7 @@
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 
 \SweaveOpts{concordance=TRUE}
 
@@ -24,11 +24,11 @@
 \maketitle
 
 \abstract{
-The \patchDVI package works with Sweave \citep{Leisch02}  and
-document previewers to facilitate editing:  it modifies the links
+The \patchDVI package works with Sweave \citep{Leisch02}  and knitr \citep{Xie2013}
+and document previewers to facilitate editing:  it modifies the links
 that \LaTeX\ puts into the output so that they refer to the original
 source.  It also includes a few project management functions to 
-make large multi-file Sweave documents easier to handle.}
+make large multi-file documents easier to handle.}
 
 \newpage
 
@@ -71,7 +71,7 @@ done, previewers will see references to the original Sweave source
 rather than the \LaTeX\ intermediate file.
 
 Besides the technical details mentioned above, 
-this paper describes the history of \patchDVI in the next section and
+this paper describes the history of \patchDVI in Section \ref{sec:history} and
 in section \ref{sec:make} some
 project management functions.  It concludes with a short discussion.
 
@@ -111,7 +111,7 @@ instead of PDF substitute \texttt{SweaveDVI} for
 \texttt{SweavePDF}, and to use \texttt{latex} and \texttt{dvipdfm}
 to produce \file{PDF} output, use \texttt{SweaveDVIPDFM}.
 If you are using MikTeX on Windows, the
-functions are \texttt{SweavePDFMiktex} and
+functions \texttt{SweavePDFMiktex} and
 \texttt{SweaveMiktex} correspond to the first two of these respectively,
 and use a few MikTeX-specific features.
 
@@ -176,13 +176,16 @@ Sweave input files to process (optionally only if they have changed since the
 last processing) and the main wrapper file, all within Sweave chunks
 in a single file, using the \texttt{SweaveAll} function.
 
-The \texttt{SweaveDVIPDFM} function is the most recent addition.
+The \texttt{SweaveDVIPDFM} function is a recent addition.
 For English language processing, I find \texttt{pdflatex} to be the most
 convenient processor, but it does not work well in languages like 
 Japanese.  During a visit to the Institute of Statistical Mathematics
 in Tokyo I learned of the issues, and with the help of Prof. H. Okumura
 and Junji Nakano I worked out \texttt{SweaveDVIPDFM} to handle the two
 step conversion to PDF.
+
+Finally, the latest version includes support for other non-Sweave processors,
+such as knitr.
 
 \section{Sweave Concordances}\label{sec:concordance}
 
@@ -453,13 +456,35 @@ out these instructions.  I have updated them in December, 2013 for TeXShop 2.47.
 
 \begin{enumerate}
 \item In Preferences -- Typesetting -- Sync Method, choose ``SyncTeX''.
-\item Create a file called \verb!Library/TeXShop/Engines/Sweave.engine! 
+\item 
+\begin{enumerate}
+\item To use with Sweave, create a file called \\
+\verb!Library/TeXShop/Engines/Sweave.engine!  \\
 containing the lines
 \begin{verbatim}
-#!/bin/tcsh
-Rscript -e "patchDVI::SweavePDF(  '$1' )"
+#!/bin/bash
+export LC_ALL=<locale>
+Rscript -e "patchDVI::SweavePDF('$1')"
 \end{verbatim}
-in your home directory, and give it executable permissions.  
+in your home directory, and give it executable permissions.  Replace \verb!<locale>! with
+your locale string, e.g. \verb!en_CA.UTF-8! for Canadian English using UTF-8 encoding.  The
+locale line can be omitted if you only use plain ASCII characters, but is probably necessary
+for other cases.
+\item To use with knitr, create a file called \\
+\verb!Library/TeXShop/Engines/knitr.engine! \\
+containing the lines
+\begin{verbatim}
+#!/bin/bash
+export LC_ALL=<locale>
+Rscript -e "patchDVI::SweavePDF('$1',\ 
+  weave = knitr::knit, envir = globalenv())"
+\end{verbatim}
+in your home directory, and give it executable permissions.  Replace \verb!<locale>! with
+your locale string, e.g. \verb!en_CA.UTF-8! for Canadian English using UTF-8 encoding.  The
+locale line can be omitted if you only use plain ASCII characters, but is probably necessary
+for other cases.
+\item For other vignette engines, replace the \verb!weave! argument in the above, as appropriate.
+\end{enumerate}
 \item Install the \texttt{patchDVI} package into R.
 \item When editing a \texttt{.Rnw} file in TeXShop, choose the Sweave engine from the menu.
 \item If you have multiple files in your project, your main file must be a Sweave file
@@ -469,7 +494,14 @@ and you need to add the line
 %!TEX root = Main.Rnw
 \end{verbatim}
 to each subordinate file.
-\item Add the \verb!\SweaveOpts{concordance=TRUE}! line to your document.
+\item For Sweave, add the \verb!\SweaveOpts{concordance=TRUE}! line to your document.  For knitr, add a code chunk
+similar to this:
+\begin{verbatim}
+ <<results='asis'>>=
+ patchDVI::useknitr()
+ @
+\end{verbatim}
+somewhere near the start of your document.
 \end{enumerate}
 
 The TeXShop previewer supports SyncTeX; you right click in the preview, and choose Sync from the menu
@@ -481,7 +513,12 @@ to jump to your source location.
 TeXWorks is an editor for multiple platforms, 
 somewhat similar to TeXShop.  These instructions 
 have been tested in version 0.4.5, with MikTeX 2.9 on Windows,
-and MacTeX on MacOS.
+and MacTeX on MacOS.  
+
+NB:  Some versions of TeXWorks have a bug in setting the \texttt{HOME} directory
+of the user.  With those versions, R will not find a locally installed
+copy of \texttt{patchDVI}.  To work around the bug, set the \verb!R_USER!
+environment variable to your Windows home directory, e.g. \verb!R_USER=C:/Users/Murdoch!.
 
 TeXWorks can work with the \texttt{patchDVI}
 project management features using a script
@@ -490,8 +527,10 @@ the main file.  See the instructions below for my current best attempt at such
 a script.  It can also use the TeXShop approach of specifying
 the TEX root file to be a Sweave file.
 
+The instructions are given first for Sweave, then below for knitr.
+
 \begin{enumerate}
-\item Add a new SweavePDF command:  In\\
+\item \label{theCommand} Add a new SweavePDF command:  In\\
 
 Edit | Preferences | Typesetting \\
 \\
@@ -511,7 +550,7 @@ line in my file:
 file-open-filter:	Sweave and TeX documents (*.Rnw *.tex)
 \end{verbatim}
 \item When editing a \texttt{.Rnw} file in TeXWorks, choose the SweavePDF engine from the menu.
-\item Add the \verb!\SweaveOpts{concordance=TRUE}! line to your document.
+\item \label{theConcordance} Add the \verb!\SweaveOpts{concordance=TRUE}! line to your document.
 \item If you are using the project management features of \texttt{patchDVI} and are
 editing a subordinate file, TeXWorks will not open or update the PDF preview after it processes changes.
 There are four workarounds for this.
@@ -527,50 +566,24 @@ The next simplest is the TeXShop approach:  include a line
 near the top of the file, and make sure that \texttt{Main.Rnw} refers
 to all subordinate Sweave files.
 
-You can force updates without the TEX root specification
-using the following hook script (written by Stefan L\"{o}ffler).
-\begin{verbatim}
-// TeXworksScript
-// Title: Refresh PDF
-// Description: Refreshes PDFs after typesetting finishes
-// Author: Stefan Löffler
-// Version: 0.1
-// Date: 2013-11-20
-// Script-Type: hook
-// Hook: AfterTypeset
-
-windows = TW.app.getOpenWindows()
-
-for (i = 0; i < windows.length; i++) {
-    win = windows[i]
-    if (win.objectName == "PDFDocument") {
-        win.reload()
-    }
-}
-\end{verbatim}
-Put this script in a file \texttt{refreshpdf.js} in your TeXWorks script directory (available through the menu
-using Scripts | Scripting TeXWorks | Show Scripts Folder).  After that, PDF previews will be automatically
-updated after every Typeset operation.
-
-I have written another script (included in the scripts directory of \texttt{patchDVI}
-as \texttt{sweavePreview.js});
-it attempts to determine the PDF filename from the console output, and reloads that file.
-I have tested it on my own systems but not elsewhere, so I am not sure that it will work on other
-systems.  With this script (shown below) TeXWorks should open
-the preview without using the tricks above.  The TeXWorks 
-previewer will jump back to the source if you right click and choose 
-Jump to Source.
-
-
-\begin{verbatim}
-<<results=tex, echo=FALSE>>=
-cat(readLines(system.file("scripts/sweavePreview.js", 
-                          package="patchDVI")), sep="\n")
-@
-\end{verbatim}
 \end{enumerate}
 
 
+To use TeXWorks with knitr, the instructions are very similar to those above, but with two changes.
+
+In step \ref{theCommand}, replace the second line of the command (the \verb!SweavePDF! call) with the following longer command, all on one line:
+\begin{verbatim}
+patchDVI::SweavePDF('$fullname', weave = knitr::knit, 
+envir = globalenv())
+\end{verbatim}
+
+In step \ref{theConcordance}, insert the following code chunk
+into your file:
+\begin{verbatim}
+ <<results='asis'>>=
+ patchDVI::useknitr()
+ @
+\end{verbatim}
 
 \section{Using \patchDVI with WinEdt}
 \label{sec:winedt}

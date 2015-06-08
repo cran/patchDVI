@@ -20,10 +20,3 @@
 ## SweavePDF("doc.Rnw")
 
 
-###################################################
-### code chunk number 4: patchDVI.Rnw:566-568
-###################################################
-cat(readLines(system.file("scripts/sweavePreview.js", 
-                          package="patchDVI")), sep="\n")
-
-
