@@ -1,11 +1,11 @@
 Package: patchDVI
 Type: Package
-Title: Package to Patch .dvi or .synctex Files
-Version: 1.9.1616
+Title: Package to Patch '.dvi' or '.synctex' Files
+Version: 1.10.1
 Author: Duncan Murdoch
-Maintainer: Duncan Murdoch <murdoch@stats.uwo.ca>
-Description: Functions to patch specials in .dvi files,
-        or entries in .synctex files.  Works with "concordance=TRUE" 
+Maintainer: Duncan Murdoch <murdoch.duncan@gmail.com>
+Description: Functions to patch specials in '.dvi' files,
+        or entries in '.synctex' files.  Works with concordance=TRUE 
         in Sweave or knitr to link sources to previews.
 License: GPL-2
 Depends: R (>= 2.10.0)
@@ -17,6 +17,6 @@ SystemRequirements: The 'Japanese.Rnw' vignette requires uplatex and
 VignetteBuilder: patchDVI
 Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2015-06-08 19:35:40 UTC; murdoch
+Packaged: 2020-05-04 14:26:49 UTC; murdoch
 Repository: CRAN
-Date/Publication: 2015-06-09 08:12:27
+Date/Publication: 2020-05-08 09:30:06 UTC

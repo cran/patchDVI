@@ -1,5 +1,6 @@
 \name{SweaveAll}
 \alias{SweaveAll}
+\alias{knitAll}
 \alias{.SweaveFiles}
 \alias{.TexRoot}
 \alias{.PostSweaveHook}
@@ -12,18 +13,30 @@ project.  All modified files will be run through \code{\link{Sweave}}.  Followin
 the run, several post-processing steps may be performed.
 }
 \usage{
-SweaveAll(SweaveFiles, make = 1, PostSweaveHook = NULL, weave = utils::Sweave, ...)
+SweaveAll(SweaveFiles, make = 1, PostSweaveHook = NULL, 
+          force = TRUE, verbose = FALSE, 
+          weave = utils::Sweave, ...)
+knitAll(RnwFiles, make = 1, PostKnitHook = NULL, 
+          force = TRUE, verbose = FALSE, 
+          weave = knitr::knit, ...)          
 }
 \arguments{
-  \item{SweaveFiles}{character vector naming the files to 
-  always run through \code{\link{Sweave}}.  
+  \item{SweaveFiles, RnwFiles}{character vector naming the files to 
+  run through \code{weave}.  
 }
   \item{make}{
-  integer indicating which files to run \code{Sweave} on.  See below.
+  integer indicating which files to run \code{weave} on.  See below.
 }
-  \item{PostSweaveHook}{
-  default hook to be called after each \code{Sweave} call.  See below.
+  \item{PostSweaveHook, PostKnitHook}{
+  default hook to be called after each \code{weave} call.  See below.
 }
+  \item{force}{
+  If \code{TRUE}, all files in \code{SweaveFiles} will be run,
+  otherwise only those which are newer than the corresponding \file{.tex} file.
+  }
+  \item{verbose}{
+  Mainly for debugging:  print progress messages.
+  }
   \item{weave}{
   The function to be used for converting from source to \file{.tex}.
 It will be called as \code{weave(filename, ...)} for each file 
@@ -34,7 +47,10 @@ in \code{SweaveFiles} and other files identified as needing weaving.
 }
 }
 \details{
-This function runs \code{weave} repeatedly. It starts by running \code{weave}
+This function runs \code{weave} repeatedly. It starts by 
+checking for a global variable \code{.SweaveFiles}, and 
+augments the \code{SweaveFiles} argument with any unprocessed
+files in that list.  It then runs \code{weave}
 on each file listed in \code{SweaveFiles}.
 
 Before each run, it removes the global variables
@@ -46,13 +62,14 @@ Following each run, \code{SweaveAll} checks whether the code
 chunks created a variable \code{.PostSweaveHook} in the global
 environment.  If present, it should be a function (or the name of a
 function; \code{\link{match.fun}} is used to do the lookup) taking a
-single argument.  If not present, the \code{PostSweaveHook} argument
+single argument.  If not present, the \code{PostSweaveHook}
+(or \code{PostKnitHook}) argument
 will be used as a default.  \code{SweaveAll} will pass the name of the
 \file{.tex} output file to this function, which can do any required
 postprocessing.  For example, we have used it to remove local
 pathnames from output strings.
 
-\code{SweaveAll} also checks for \code{.SweaveFiles}, which if present
+\code{SweaveAll} then checks again for \code{.SweaveFiles}, which if present
 should be a character vector of filenames.  These are collected, and
 after the \code{Sweave} runs specified by \code{SweaveFiles}, the
 \code{make} parameter controls which other files are run.  The default
