@@ -4,57 +4,58 @@
 \alias{SweaveDVI}
 \alias{SweavePDF}
 \alias{SweaveDVIPDFM}
-\title{Simple function to run MikTeX}
+\title{Run Sweave and Patch}
 \description{
-This is a simple script to run Sweave, then MikTeX, then patchDVI. 
+This is a simple script to run Sweave, then convert the LaTeX file,
+then patch it.
 }
 \usage{
 
-SweaveMiktex(Rnw, main, 
+SweaveMiktex(Rnw, main,
     cmd = "texify",
     options = "--tex-option=-src-specials --tex-option=-interaction=nonstopmode",
     includedir = "--tex-option=--include-directory=",
-    stylepath = FALSE, 
-    source.code = NULL, 
-    make = 1, 
-    preview = 'yap "\%s"', 
+    stylepath = FALSE,
+    source.code = NULL,
+    make = 1,
+    preview = 'yap "\%s"',
     patchLog=TRUE,
     sleep = 0, ...)
-		  
-SweavePDFMiktex(Rnw, main,  
-    cmd = "texify --pdf", 
+
+SweavePDFMiktex(Rnw, main,
+    cmd = "texify --pdf",
     options = "--tex-option=-synctex=-1 --tex-option=-interaction=nonstopmode",
     includedir = "--tex-option=-include-directory=",
-    stylepath = FALSE, 
-    source.code = NULL, 
-    make = 1, 
-    preview = NULL, 
-    patchLog = TRUE, 
+    stylepath = FALSE,
+    source.code = NULL,
+    make = 1,
+    preview = NULL,
+    patchLog = TRUE,
     sleep = 0, ...)
-		  
-SweaveDVI(Rnw, main, 
-    texinputs = NULL, 
-    source.code = NULL, 
-    make = 1, 
+
+SweaveDVI(Rnw, main,
+    texinputs = NULL,
+    source.code = NULL,
+    make = 1,
     links = NULL,
-    preview = NULL, 
+    preview = NULL,
     patchLog = TRUE, ...)
 
-SweavePDF(Rnw, main, 
-    texinputs = NULL, 
-    source.code = NULL, 
-    make = 1, 
+SweavePDF(Rnw, main,
+    texinputs = NULL,
+    source.code = NULL,
+    make = 1,
     links = NULL,
-    preview = NULL, 
+    preview = NULL,
     patchLog = TRUE, ...)
-	  
-SweaveDVIPDFM(Rnw, main, 
-    latex = "latex", latexOpts = "-synctex=1 -interaction=nonstopmode", 
-    dvipdfm = "dvipdfm", dvipdfmOpts = "", 
-    texinputs = NULL, 
-    source.code = NULL, 
-    make = 1, 
-    preview = NULL, 
+
+SweaveDVIPDFM(Rnw, main,
+    latex = "latex", latexOpts = "-synctex=1 -interaction=nonstopmode",
+    dvipdfm = "dvipdfm", dvipdfmOpts = "",
+    texinputs = NULL,
+    source.code = NULL,
+    make = 1,
+    preview = NULL,
     patchLog = TRUE, ...)
 }
 \arguments{
@@ -79,16 +80,16 @@ SweaveDVIPDFM(Rnw, main,
   \item{...}{ Additional options to pass to \code{\link{SweaveAll}} }
 }
 \details{
-If the \code{Rnw} argument is a filename ending in \file{.tex}, then 
+If the \code{Rnw} argument is a filename ending in \file{.tex}, then
 weaving is skipped, but the \file{.dvi} file is still patched (because
 one of the other files in the project might have come from Sweave).
 
 The \code{source.code} argument may be used to temporarily install code before
-running the document through the weaver (e.g. \code{\link{Sweave}}).  
+running the document through the weaver (e.g. \code{\link{Sweave}}).
 It could install
-an experimental version of \code{\link{Sweave}}, or set up some variables 
+an experimental version of \code{\link{Sweave}}, or set up some variables
 to be used by other code chunks, etc.  (Note that things are sourced locally,
-whereas \code{\link{Sweave}} runs things in the global environment, 
+whereas \code{\link{Sweave}} runs things in the global environment,
 so the file will need to make explicit assignments there, and it should
 avoid using names that clash with the argument names to \code{SweaveMiktex}
 or \code{SweavePDFMiktex}.)
@@ -96,8 +97,8 @@ or \code{SweavePDFMiktex}.)
 The functions invoke Latex differently.  \code{SweaveMiktex} is designed
 to call Miktex's \code{texify} command to produce a \file{.dvi} file.  \code{SweavePDFMiktex}
 does the same, but produces a \file{.pdf}.  \code{SweaveDVI} and \code{SweavePDF}
-are similar, but use a modified version of \R{}'s \code{\link[tools]{texi2dvi}} 
-function to invoke Latex. \code{SweaveDVIPDFM} does the conversion to 
+are similar, but use a modified version of \R{}'s \code{\link[tools]{texi2dvi}}
+function to invoke Latex. \code{SweaveDVIPDFM} does the conversion to
 \file{.pdf} in two stages.
 
 The \code{patchLog} option makes use of the new \code{\link{patchLog}} function.

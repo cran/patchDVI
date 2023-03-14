@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Duncan Murdoch" />
+
+<meta name="date" content="2023-03-14" />
+
+<title>The patchDVI package</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">The patchDVI package</h1>
+<h4 class="author">Duncan Murdoch</h4>
+<h4 class="date">2023-03-14</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#abstract" id="toc-abstract">Abstract</a></li>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#quick-start-instructions" id="toc-quick-start-instructions">Quick Start Instructions</a></li>
+<li><a href="#r-markdown-instructions" id="toc-r-markdown-instructions">R Markdown Instructions</a>
+<ul>
+<li><a href="#known-limitations-of-markdown-support" id="toc-known-limitations-of-markdown-support">Known limitations of
+Markdown support</a></li>
+</ul></li>
+<li><a href="#patchdvi-history" id="toc-patchdvi-history"><code>patchDVI</code> History</a></li>
+<li><a href="#concordances" id="toc-concordances">Concordances</a>
+<ul>
+<li><a href="#technical-description-of-concordance-records" id="toc-technical-description-of-concordance-records">Technical
+description of concordance records</a></li>
+<li><a href="#patching-.dvi-files" id="toc-patching-.dvi-files">Patching
+<code>.dvi</code> Files</a></li>
+<li><a href="#patching-.synctex-files" id="toc-patching-.synctex-files">Patching <code>.synctex</code>
+Files</a></li>
+<li><a href="#patching-.html-files" id="toc-patching-.html-files">Patching <code>.html</code> Files</a></li>
+</ul></li>
+<li><a href="#project-management-functions" id="toc-project-management-functions">Project Management Functions</a>
+<ul>
+<li><a href="#the-complete-process" id="toc-the-complete-process">The
+Complete Process</a></li>
+<li><a href="#installing-or-loading-packages" id="toc-installing-or-loading-packages">Installing or Loading
+Packages</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+<li><a href="#appendices" id="toc-appendices">Appendices</a>
+<ul>
+<li><a href="#using-patchdvi-with-texshop" id="toc-using-patchdvi-with-texshop">Using <code>patchDVI</code> with
+TeXShop</a></li>
+<li><a href="#using-patchdvi-with-texworks" id="toc-using-patchdvi-with-texworks">Using <code>patchDVI</code> with
+TeXworks</a></li>
+<li><a href="#using-patchdvi-with-winedt" id="toc-using-patchdvi-with-winedt">Using <code>patchDVI</code> with
+WinEdt</a></li>
+<li><a href="#using-patchdvi-with-rstudio" id="toc-using-patchdvi-with-rstudio">Using <code>patchDVI</code> with
+RStudio</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<p>The <code>patchDVI</code> package works with Sweave <span class="citation">(Leisch 2002)</span>, knitr <span class="citation">(Xie
+2013)</span> and R Markdown <span class="citation">(Xie, Allaire, and
+Grolemund 2018)</span> and document previewers to facilitate editing: it
+modifies the links that are put into the output so that they refer to
+the original source. It also includes a few project management functions
+to make large multi-file documents easier to handle, and can include
+source links (“concordances”) in HTML output from R Markdown. }</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Most implementations of LaTeX allow source references to be emitted,
+so that previewers of the <code>.dvi</code> or <code>.pdf</code> output
+file can link back to the original source line. This was a feature of
+the <code>yap</code> previewer for <code>.dvi</code> files in MikTeX
+<span class="citation">(Schenk 2010)</span> for many years. Support for
+source references has appeared more recently for <code>.pdf</code>
+output, first in <code>pdfsync</code>. More recently Synctex <span class="citation">(Laurens 2008)</span> links have been implemented in
+<code>pdflatex</code> and other LaTeX processors.</p>
+<p>Unfortunately for knitr/Sweave/R Markdown users, these links point to
+the <code>.tex</code> source that was processed, which is not the true
+source code in the knitr/Sweave <code>.Rnw</code> or R Markdown
+<code>.Rmd</code> or other input file. (I will refer to all of these as
+<code>.Rnw</code> files.) Clicking on “go to source” in a previewer will
+jump to the <code>.tex</code> file; changes made there will be lost the
+next time the <code>.Rnw</code> input is processed.</p>
+<p>I wrote the <code>patchDVI</code> package to address this problem. It
+works as follows. If the knitr/Sweave file is processed with the option
+<code>concordance=TRUE</code>, knitr or Sweave will output a record of
+the concordance between the lines in the input file and the output file.
+When the file is processed by LaTeX or Pandoc, this information is
+embedded in the output. (Details of the embedding are described in
+sections <a href="#concordances">Concordances</a> to <a href="#patching-.synctex-files">Patching Synctex Files</a> below.) After
+producing the <code>.dvi</code> or <code>.pdf</code> file, a
+<code>patchDVI</code> function is run to read the concordance
+information and to patch the source reference information produced by
+LaTeX. Once this has been done, previewers will see references to the
+original <code>.Rnw</code> source rather than the LaTeX intermediate
+file.</p>
+<p>A 2022 addition follows a similar process with R Markdown files. In
+this case, the output driver in the YAML header needs to be changed, for
+example to <code>patchDVI::pdf_documentC</code>. The driver automates
+the steps described above. At the present time there are some notable
+limitations in R Markdown handling. These are described in <a href="#r-markdown-instructions">R Markdown Instructions</a>.</p>
+<p>Besides the technical details mentioned above, this paper describes
+the history of <code>patchDVI</code> in Section <a href="#patchdvi-history"><code>patchDVI</code> History</a> and in
+section <a href="#project-management-functions">Project Management
+Functions</a> some project management functions. It concludes with a
+short discussion.</p>
+</div>
+<div id="quick-start-instructions" class="section level1">
+<h1>Quick Start Instructions</h1>
+<p>There are several ways to make use of <code>patchDVI</code>. This
+section describes some common ones for Sweave/knitr. Section <a href="#r-markdown-instructions">R Markdown Instructions</a> deals with R
+Markdown.</p>
+<p>In all cases the package needs to be installed first; the current
+release is on CRAN and can be installed using</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
+<p>Source code is maintained on Github and the latest development
+version can be installed using</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>With <code>.Rnw</code> files for knitr or Sweave, the document also
+needs to have an option set to produce the “concordances” (links between
+the <code>.Rnw</code> source and the <code>.tex</code> output of
+knitr/Sweave). If you are using knitr, include these lines in a code
+chunk in your document:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>opts_knit<span class="sc">$</span><span class="fu">set</span>(<span class="at">concordance =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>For Sweave, put these lines outside of a code chunk near the start of
+your document:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">\usepackage</span>{<span class="ex">Sweave</span>}</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">\SweaveOpts</span>{concordance=TRUE}</span></code></pre></div>
+<p>The simplest way to proceed is from within R. Assuming
+<code>doc.Rnw</code> is the knitr/Sweave document to process and it is
+in the current working directory, run</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">knitPDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
+<p>or</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">SweavePDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
+<p>This runs <code>doc.Rnw</code> through knitr/Sweave, runs any other
+chapters in the project through knitr/Sweave, then runs the main
+<code>.tex</code> file (typically <code>doc.tex</code>, but not
+necessarily; see section <a href="#project-management-functions">Project
+Management Functions</a> below) through <code>pdflatex</code>, and
+patches the source links. To produce DVI output instead of PDF
+substitute <code>knitDVI</code> for <code>knitPDF</code>, and to use
+<code>latex</code> and <code>dvipdfm</code> to produce PDF output, use
+<code>knitDVIPDFM</code>. If you are using MikTeX on Windows, the
+functions <code>knitPDFMiktex</code> and <code>knitMiktex</code>
+correspond to the first two of these respectively, and use a few
+MikTeX-specific features.</p>
+<p>These functions all have an optional argument <code>preview</code>,
+which can contain a command line to run a <code>.pdf</code> or
+<code>.dvi</code> previewer (with the filename replaced by
+<code>%s</code>). The <code>.pdf</code> previewer should be one that can
+handle Synctex links; unfortunately, Acrobat Reader and MacOS Preview
+are both deficient in this area. On Windows, <code>SumatraPDF</code>
+works, as do the built-in previewers in TeXShop and TeXworks on MacOS X
+and other platforms.</p>
+<p>MikTeX includes the <code>yap</code> previewer for <code>.dvi</code>
+files; the <code>knitMiktex</code> command sets it as the default.</p>
+<p>Another way to proceed is directly from within your text editor. The
+instructions here depend on your editor; I have included a few in the
+Appendices: TeXShop in <a href="#using-patchdvi-with-texshop">Using
+<code>patchDVI</code> with TeXShop</a>, WinEdt in <a href="#using-patchdvi-with-winedt">Using <code>patchDVI</code> with
+WinEdt</a>, and TeXworks in <a href="#using-patchDVI-with-texworks">Using <code>patchDVI</code> with
+TeXworks</a>. Some editors (e.g. TeXShop and TeXworks) include a
+previewer that can handle the source links.</p>
+<p>Finally, you may want to run knitr from the command line, outside of
+R. This line (or the obvious variants with replacements for
+<code>knitPDF</code>) should do it:</p>
+<pre><code>Rscript -e &#39;patchDVI::knitPDF(&quot;doc.Rnw&quot;)&#39;</code></pre>
+</div>
+<div id="r-markdown-instructions" class="section level1">
+<h1>R Markdown Instructions</h1>
+<p>The most recent addition to <code>patchDVI</code> is support for R
+Markdown input. R Markdown <span class="citation">(Allaire et al.
+2022)</span> has become very popular in recent years, with
+<code>.Rmd</code> input nowadays exceeding the popularity of
+Sweave-style <code>.Rnw</code> input. The general structure is that each
+file contains a ``YAML header’’ giving configuration information, and
+this is followed by a mix of text in a Markdown dialect and code in R or
+another language.</p>
+<p>To use <code>patchDVI</code> with R Markdown, you will currently need
+the development version. This may be installed using</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>, <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>With that version installed, you then change the <code>output</code>
+setting in the YAML. If it was <code>pdf_document</code>, use</p>
+<pre><code>output: patchDVI::pdf_documentC</code></pre>
+<p>instead. If it was <code>html_document</code>, use</p>
+<pre><code>output RmdConcord::html_documentC</code></pre>
+<p>That should be all that is necessary to enable concordances and to
+carry out the necessary patching. Almost all options in the original
+drivers are supported in these replacements, plus a few more. See the
+help pages for details.</p>
+<p>One possible snag is that R Markdown conversions rely on Pandoc. If
+you are processing your document from within RStudio, RStudio will make
+sure that Pandoc is found, but if you are working in another
+environment, it will be up to you to make sure R can find it. One way to
+do this is to add the Pandoc directory to your <code>PATH</code>;
+another is to make a link to Pandoc from a directory that is already on
+your <code>PATH</code>.</p>
+<p>It is also possible to use analogs of the
+<code>SweavePDF</code>/<code>knitPDF</code> family of functions; the
+ones intended for Markdown source are <code>renderMiktex</code>,
+<code>renderPDFMiktex</code>, <code>renderDVI</code>,
+<code>renderPDF</code>, <code>renderDVIPDFM</code> and
+<code>renderAll</code>.</p>
+<div id="known-limitations-of-markdown-support" class="section level2">
+<h2>Known limitations of Markdown support</h2>
+<p>The Markdown support relies on a relatively recent addition to
+Pandoc, the <code>sourcepos</code> extension. At present (Pandoc 2.19.2
+as included in RStudio), this extension only works with the Commonmark
+reader, whereas by default, Pandoc uses its own dialect of Markdown. To
+enable concordances, <code>patchDVI</code> switches the Pandoc input
+setting to <code>commonmark_x+sourcepos</code>.</p>
+<p>Unfortunately, the <code>commonmark_x</code> reader doesn’t support
+most of the extensions that the standard <code>markdown</code> reader
+supports. This page: <a href="https://github.com/jgm/pandoc/wiki/Roadmap" class="uri">https://github.com/jgm/pandoc/wiki/Roadmap</a> should list
+the current status. For the definitions of the extensions, see the
+Pandoc documentation at <a href="https://pandoc.org/MANUAL.html" class="uri">https://pandoc.org/MANUAL.html</a>.</p>
+<p>Of particular note are the lack of <code>citations</code> and
+<code>raw_tex</code>. Citations in Markdown source like
+<code>[@Author]</code> will not currently be processed in Commonmark,
+though support for this is planned at some future time. Raw LaTeX will
+need to be “fenced”, e.g. entered as</p>
+<pre><code>```{=latex}
+LaTeX
+```</code></pre>
+<p>(The <code>\pagebreak</code> and <code>\newpage</code> macros receive
+special treatment, so they don’t need fencing as long as they are
+separated by blank lines from text above and below.) The “roadmap”
+indicates that raw LaTeX will never be supported in Commonmark, as it is
+incompatible.</p>
+</div>
+</div>
+<div id="patchdvi-history" class="section level1">
+<h1><code>patchDVI</code> History</h1>
+<p>Initially <code>patchDVI</code> only worked for <code>.dvi</code>
+files (hence the name). It required changes to the Sweave function in R,
+which first appeared around the release of R version 2.5.0. with
+incompatible changes in R version 2.8.0 when <code>.pdf</code> support
+was added to <code>patchDVI</code>.</p>
+<p>Using <code>patchDVI</code> requires a pre-processing step
+(knitr/Sweave), LaTeX processing, and a post-processing step (patching).
+This is usually followed by a preview of the resulting output file. It
+quickly became apparent that it was convenient to package these steps
+into a single R function, so the user only needed to make a single call.
+But the details of LaTeX processing vary from platform to platform, so I
+wrote functions <code>SweaveMiktex</code> and
+<code>SweavePDFMiktex</code> specific to the MikTex platform, with the
+intention of adding others as I used them or users told me what needed
+adding. This never happened, but in the meantime, Brian Ripley made the
+<code>tools::texi2dvi()</code> function in R much more flexible, and in
+version 1.7 of <code>patchDVI</code> I included a modified version of it
+with the hope that <code>patchDVI</code> should be more nearly platform
+neutral.</p>
+<p>The 1.7 release was motivated by an attempt to support TeXworks <span class="citation">(Kew 2008)</span>, a cross-platform LaTeX targetted
+editor. TeXworks was still in its early days (I was working with version
+0.2 on Windows), and it did not have enough flexibility to handle large
+knitr/Sweave projects, where for example, each chapter of a book
+requires separate knitr/Sweave processing, but LaTeX processes only a
+main wrapper file. This prompted me to include more
+<code>make</code>-style capabilities into <code>patchDVI</code>. It is
+now possible to specify a list of knitr/Sweave input files to process
+(optionally only if they have changed since the last processing) and the
+main wrapper file, all within code chunks in a single file, using the
+<code>knitAll()</code>/<code>SweaveAll()</code> functions.</p>
+<p>The <code>SweaveDVIPDFM()</code> function followed later. For English
+language processing, I find <code>pdflatex</code> to be the most
+convenient processor, but it does not work well in languages like
+Japanese. During a visit to the Institute of Statistical Mathematics in
+Tokyo I learned of the issues, and with the help of Prof. H. Okumura and
+Junji Nakano I worked out <code>SweaveDVIPDFM()</code> to handle the two
+step conversion to PDF.</p>
+<p>In 2015 I added support for other non-Sweave processors, such as
+knitr, and in 2020 improved the documentation for knitr users. The most
+recent addition is the support for R Markdown in 2022.</p>
+</div>
+<div id="concordances" class="section level1">
+<h1>Concordances</h1>
+<p>knitr/Sweave processes the code chunks in the <code>.Rnw</code> file,
+replacing each with the requested output from the command. This means
+that the output <code>.tex</code> file alternates between copied LaTeX
+source and newly produced blocks of output. Each line in the
+<code>.tex</code> file can thus be mapped to one or more lines of input,
+and that is what the concordance does.</p>
+<div id="technical-description-of-concordance-records" class="section level2">
+<h2>Technical description of concordance records</h2>
+<p>The concordance records are text records in the following format.
+There are four parts, separated by colons:</p>
+<ol style="list-style-type: decimal">
+<li>The label <code>concordance</code> to indicate the type of
+record.</li>
+<li>The output <code>.tex</code> filename.</li>
+<li>The input <code>.Rnw</code> filename.</li>
+<li>The input line numbers corresponding to each output line.</li>
+</ol>
+<p>The third component is compressed using a simple encoding: The first
+number is the first line number; the remainder of line numbers are a
+run-length encoding of the differences. Thus if the input file is as
+shown here:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Line number</th>
+<th>Input text</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>\SweaveOpts{concordance=TRUE}</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>This is text</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><code>&lt;&lt;&gt;&gt;=</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><code>123</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><code>@</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>This is more text</td>
+</tr>
+</tbody>
+</table>
+<p>the output file would be as shown below, with the concordance as
+shown there in the second column.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Output line</th>
+<th>Input line</th>
+<th>Output text</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td><code>\input{sample-concordance}</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>2</td>
+<td>This is text.</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>4</td>
+<td><code>\begin{Schunk}</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>4</td>
+<td><code>\begin{Sinput}</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>4</td>
+<td><code>&gt; 123</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>4</td>
+<td><code>\end{Sinput}</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>4</td>
+<td><code>\begin{Soutput}</code></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>4</td>
+<td><code>[1] 123</code></td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>4</td>
+<td><code>\end{Soutput}</code></td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>4</td>
+<td><code>\end{Schunk}</code></td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>6</td>
+<td>This is more text</td>
+</tr>
+</tbody>
+</table>
+<p>This concordance would be recorded in the file
+<code>sample-concordance.tex</code> as</p>
+<pre><code>\Sconcordance{concordance:sample.tex:sample.Rnw:%
+1 1 1 1 2 7 0 1 2}</code></pre>
+<p>The numeric part of this file may be interpreted as shown below:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Values</th>
+<th>Interpretation</th>
+<th>Expansion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>1</code></td>
+<td>line 1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td><code>1 1</code></td>
+<td>1 increase of 1</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td><code>1 2</code></td>
+<td>1 increase of 2</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td><code>7 0</code></td>
+<td>7 increases of 0</td>
+<td>4 4 4 4 4 4 4</td>
+</tr>
+<tr class="odd">
+<td><code>1 2</code></td>
+<td>1 increase of 2</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>The same format for concordance records is used in R Markdown, but
+when the output format is HTML, the target file is skipped and it is
+wrapped in an HTML comment instead, e.g.</p>
+<pre><code>&lt;!-- concordance::sample.Rnw:1 1 1 1 2 7 0 1 2 --&gt;</code></pre>
+</div>
+<div id="patching-.dvi-files" class="section level2">
+<h2>Patching <code>.dvi</code> Files</h2>
+<p>The <code>\Sconcordance</code> macro expands to a
+<code>\special</code> macro when producing a <code>.dvi</code> file.
+This is included verbatim in the <code>.dvi</code> file. The
+<code>concordance:</code> prefix identifies it as a
+<code>patchDVI</code> concordance. The <code>patchDVI()</code> function
+scans the whole file until it finds this sort of record. (There may be
+more than one, if multiple files make up the document.) Source
+references are also recorded by LaTeX in <code>\special</code> records;
+their prefix is <code>src:</code>. The <code>patchDVI()</code> function
+reads each <code>src:</code> special and if it refers to a file in a
+<code>concordance:</code> special, makes the substitution. At the end,
+it rewrites the whole <code>.dvi</code> file.</p>
+</div>
+<div id="patching-.synctex-files" class="section level2">
+<h2>Patching <code>.synctex</code> Files</h2>
+<p>When using <code>pdflatex</code>, the <code>\Sconcordance</code>
+macro expands to a <code>\pdfobj</code> macro containing the
+concordance, which eventually is embedded in the <code>.pdf</code> file.
+However, the Synctex scheme of source references does not write the
+references to the <code>.pdf</code> file directly. Instead, they are
+written to a separate file with extension <code>.synctex</code>, or a
+compressed version of that file, with extension
+<code>.synctex.gz</code>. The <code>patchSynctex()</code> function reads
+the concordances from either the <code>.pdf</code> file (when
+<code>pdflatex</code> was used) or the <code>.dvi</code> file, and the
+source references from the Synctex file. It rewrites only the Synctex
+file when it makes its changes.</p>
+</div>
+<div id="patching-.html-files" class="section level2">
+<h2>Patching <code>.html</code> Files</h2>
+<p>If R Markdown has an HTML target, the concordances are embedded by
+Pandoc in <code>span</code> and <code>div</code> markup, e.g.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;span</span> <span class="er">data-pos</span><span class="ot">=</span><span class="st">&quot;sample.knit.md@13:1-13:5&quot;</span><span class="kw">&gt;</span>This<span class="kw">&lt;/span&gt;</span></span></code></pre></div>
+<p>The driver reads the <code>data-pos</code> attributes, works out the
+corresponding line from the true source file, and rewrites the
+concordances using the concordance record in a comment as described at
+the end of Section <a href="#technical-description-of-concordance-records">Technical
+description of concordance records</a>.</p>
+<p>Currently I am only aware of one use for these values: the HTML Tidy
+checks done in R 4.3.x will report the original source lines in the
+<code>.Rmd</code> file. If I become aware of other uses for these
+records, it seems likely this format will need to change.</p>
+</div>
+</div>
+<div id="project-management-functions" class="section level1">
+<h1>Project Management Functions</h1>
+<p>As mentioned above, there are a number of steps involved in running
+<code>patchDVI</code> with a complex knitr/Sweave project:</p>
+<ol style="list-style-type: decimal">
+<li>Run knitr/Sweave on each input file.</li>
+<li>Run LaTeX on the main wrapper file.</li>
+<li>Run the appropriate <code>patchDVI()</code> function on the output
+file.</li>
+<li>Preview or print the result.</li>
+</ol>
+<p>Moreover, step 1 needs to be repeated once for each <code>.Rnw</code>
+file, but only if the content has changed since the last run, while the
+other steps need only be done once.</p>
+<p>To manage this complication, the <code>patchDVI</code> package
+includes simple project management functions, <code>knitAll()</code>,
+<code>renderAll()</code> and <code>SweaveAll()</code>. These are really
+the same function with different defaults, and will be described in
+terms of <code>SweaveAll()</code>. This function runs Sweave on multiple
+files and determines the name of the main wrapper file. It is used
+internally by the functions described in <a href="#the-complete-process">The Complete Process</a> below, but can
+also be called directly by the user.</p>
+<p>Here is how it works. <code>SweaveAll()</code> takes a vector of
+filenames as input, and runs Sweave on each. After each run, it examines
+the global environment for the four variables
+<code>.PostSweaveHook</code>, <code>.SweaveFiles</code>,
+<code>.SweaveMake</code> and <code>.TexRoot</code>. (The first three
+variables can instead be named <code>.PostKnitHook</code>,
+<code>.knitFiles</code>, <code>.knitMake</code>. If both versions are
+present, the choice is undefined, so don’t do that.)</p>
+<p>A code chunk in a <code>.Rnw</code> file may produce a function (or
+the name of a function; <code>match.fun()</code> is used to look it up)
+named <code>.PostSweaveHook</code>. If present, this should be a
+function taking a single argument. Immediately after running Sweave,
+<code>SweaveAll()</code> will call this function, passing the name of
+the <code>.tex</code> output file as the only argument. The hook can do
+any required postprocessing, for example, it could remove local
+pathnames from output strings.</p>
+<p>The optional parameter <code>PostSweaveHook</code> to the
+<code>SweaveAll()</code> function can provide a default hook function.
+Hooks specified using the <code>.PostSweaveHook</code> variable take
+precedence in any given input file.</p>
+<p><code>SweaveAll()</code> will also use the character variable named
+<code>.SweaveFiles</code>. It should contain the names of
+<code>.Rnw</code> files in the project. If no corresponding
+<code>.tex</code> file exists, or the <code>.Rnw</code> file is newer,
+they will be run through Sweave. They may in turn name additional
+<code>.Rnw</code> files to process; each file is processed only once,
+even if it is named several times.</p>
+<p>There is an optional parameter named <code>make</code> to the
+<code>SweaveAll()</code> function. If <code>make == 1</code> (the
+default), things proceed as described above. If <code>make == 0</code>,
+the <code>.SweaveFiles</code> variable is ignored, and only the
+explicitly named files in the call to <code>SweaveAll()</code> are
+processed. If <code>make == 2</code>, then all files are processed,
+whether they are newer than their <code>.tex</code> file or not. The
+<code>.SweaveMake</code> variable will override the value of
+<code>make</code>.</p>
+<p>An <code>.Rnw</code> file may also set the value of
+<code>.TexRoot</code> to the name of a <code>.tex</code> file. If it
+does, then that is the file that should be passed to LaTeX for
+processing. If none is given, then the first file in the call to
+<code>SweaveAll()</code> will be assumed to be the root file. (If
+multiple different <code>.TexRoot</code> variables are specified by
+different <code>.Rnw</code> files, one of them will be used, but it is
+hard to predict which: so don’t do that.) Whichever file is determined
+to be the root file is the name returned by the <code>SweaveAll()</code>
+call.</p>
+<p><code>SweaveAll()</code> is called by all of the functions described
+in <a href="#the-complete-process">The Complete Process</a> below to do
+step 1 of the <code>patchDVI</code> steps.</p>
+<p>The workflow this is designed for is as follows. Each
+<code>.Rnw</code> chapter (named for example <code>chapter.Rnw</code>)
+in a large project should specify the <code>.TexRoot</code>, e.g. using
+the code chunk</p>
+<pre><code> &lt;&lt;echo=FALSE&gt;&gt;=
+ .TexRoot &lt;- &quot;wrapper.tex&quot;
+ @</code></pre>
+<p>Similarly, the wrapper file (named for example
+<code>wrapper.Rnw</code>) should be a <code>.Rnw</code> file that sets
+<code>.SweaveFiles</code> to the complete list of files in the project.
+Then one can build an initial copy of the entire document by calling any
+of <code>knitPDF</code>, <code>SweavePDF</code>, <code>renderPDF</code>,
+<code>knitMiktex</code>, <code>SweaveMiktex</code>,
+<code>renderMiktex</code>, <code>knitDVI</code>, <code>SweaveDVI</code>,
+<code>renderDVI</code>, <code>knitDVIPDFM</code>,
+<code>SweaveDVIPDFM</code>, <code>renderDVIPDFM</code> with argument
+<code>&quot;wrapper.Rnw&quot;</code>. Later, while one is working on
+<code>chapter.Rnw</code>, one can call one of those functions with
+argument <code>&quot;chapter.Rnw&quot;</code> and the chapter will be processed
+through the full sequence, without running knitr/Sweave/R Markdown on
+the other chapters.</p>
+<p>More complicated schemes are possible. For example:</p>
+<ul>
+<li>Each chapter can have subsections in separate files; then the
+chapter would name the subsections, but the main wrapper would only need
+to name the chapters if you can assume that only the chapter being
+edited was changed.</li>
+<li>If one wants to <code>make</code> the full project every time, then
+include <code>&quot;wrapper.Rnw&quot;</code> in <code>.SweaveFiles</code> in each
+chapter.</li>
+</ul>
+<div id="the-complete-process" class="section level2">
+<h2>The Complete Process</h2>
+<p>The <code>patchDVI</code> package contains five functions for each of
+knitr, R Markdown and Sweave designed to run all four of the steps
+listed at the start of this section.</p>
+<p>The functions are all named in the same style: <em>Stage1Stage2</em>,
+where <em>Stage1</em> is one of <code>knit</code>, <code>render</code>,
+or <code>Sweave</code>, and <em>Stage2</em> is one of <code>DVI</code>,
+<code>Miktex</code>, <code>PDF</code>, <code>PDFMiktex</code>,
+<code>dvipdfm</code>. The full list was given near the end of the
+introduction to Section <a href="#project-management-functions">Project
+Management Functions</a>. The <em>Stage1</em> parts specify the initial
+processor as being <code>knitr::knit</code>, <code>Sweave</code>, or
+<code>rmarkdown::render</code>. The <em>Stage2</em> part specifies how
+the resulting <code>.tex</code> files are processed:
+<code>knitDVI</code> and <code>knitMiktex</code> and related functions
+produce <code>.dvi</code> files in the general case and for MikTeX
+respectively; <code>knitPDF</code> and <code>knitPDFMiktex</code> and
+friends do the same for direct <code>.pdf</code> output from
+<code>pdflatex</code>. Finally, <code>knitDVIPDFM</code> and related
+functions run the two-step conversion using first <code>latex</code> and
+then <code>dvipdfm</code>.</p>
+<p>In each case, the LaTeX processing functions are customizable.</p>
+<p>For example, a few years ago I had a text editor that allowed me to
+call external functions with arguments depending on the name of the
+current file and the line number within it. I had it call a Windows
+batch file with the line set as argument <code>%1</code> and the
+filename set as argument <code>%2</code>; the batch file invoked R using
+the command line</p>
+<pre><code>echo patchDVI::SweaveMiktex(&#39;%2&#39;,
+    preview=&#39;yap -1 -s&quot;%1%2&quot; &quot;\x25s&quot;&#39;)
+    | Rterm --slave</code></pre>
+<p>(all on one long line). This passed the current file to
+<code>SweaveMiktex()</code>, and set the preview command to use the
+<code>yap</code> options <code>-1</code> to update the current view
+(rather than opening a new window), and to jump to the line
+corresponding to the editor line. The code <code>&quot;\x25s&quot;</code> is
+simply <code>&quot;%s&quot;</code> encoded without an explicit percent sign, which
+would be misinterpreted by the Windows command processor. When
+<code>patchDVI</code> calls the previewer, the main <code>.dvi</code>
+filename will be substituted for <code>%s</code>.</p>
+</div>
+<div id="installing-or-loading-packages" class="section level2">
+<h2>Installing or Loading Packages</h2>
+<p>In a complex project, there are often a number of different packages
+required. When updating R, you may end up with a tedious exercise to
+make sure these are all installed and updated.</p>
+<p>The <code>needsPackages()</code> function helps with this. It takes a
+character vector naming packages that will be used in the current
+document. By default, it installs any that are not already installed.
+Optionally, it can update them using <code>update.packages()</code>,
+load them, or attach them to the search list. For example, this document
+uses no packages other than <code>patchDVI</code> itself, so it could
+have</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>patchDVI<span class="sc">::</span><span class="fu">needsPackages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
+<p>near the start to ensure it is available, if this wasn’t a
+nonsensical statement. (Why would you be able to run it if
+<code>patchDVI</code> wasn’t already installed?)</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>As described in this vignette, the <code>patchDVI</code> package is a
+convenient way to work with knitr/Sweave in a modern setting, allowing
+fast switching from source input to preview. It also offers some
+features to make the management of larger projects easier.</p>
+<p>Other possibilities may exist to make use of the code in this
+package. In order to read and patch <code>.dvi</code>, <code>.pdf</code>
+and <code>.synctex</code> files, <code>patchDVI</code> includes code to
+work with each of those formats. Users may find imaginative uses for
+this capability, which I’ve tried to leave in general form. The
+low-level <code>.dvi</code> editing is done by C functions called from
+R, while the PDF related work is done in pure R code.</p>
+</div>
+<div id="appendices" class="section level1">
+<h1>Appendices</h1>
+<div id="using-patchdvi-with-texshop" class="section level2">
+<h2>Using <code>patchDVI</code> with TeXShop</h2>
+<p>TeXShop is a nice LaTeX editor on MacOS. Dave Gabrielson of the
+University of Manitoba helped me to work out these instructions. I have
+updated them in December, 2013 for TeXShop 2.47.</p>
+<ol style="list-style-type: decimal">
+<li>In <code>Preferences -- Typesetting -- Sync Method</code>, choose
+<code>SyncTeX</code>.</li>
+<li>Instructions depend on which language you are using.
+<ol style="list-style-type: lower-alpha">
+<li>To use with Sweave, create a file called
+<code>Library/TeXShop/Engines/Sweave.engine</code> in your home
+directory containing the lines below. Give it executable permissions.
+Replace <code>&lt;locale&gt;</code> with your locale string,
+e.g. <code>en_CA.UTF-8</code> for Canadian English using UTF-8 encoding.
+The locale line can be omitted if you only use plain ASCII characters,
+but is probably necessary for other cases.</li>
+</ol>
+<pre><code>#!/bin/bash
+export LC_ALL=&lt;locale&gt;
+Rscript -e &quot;patchDVI::SweavePDF(&#39;$1&#39;)&quot;</code></pre>
+<ol start="2" style="list-style-type: lower-alpha">
+<li>To use with knitr, create a file called
+<code>Library/TeXShop/Engines/knitr.engine</code> in your home directory
+containing the lines below, and give it executable permissions. Replace
+<code>&lt;locale&gt;</code> with your locale string,
+e.g. <code>en_CA.UTF-8</code> for Canadian English using UTF-8 encoding.
+The locale line can be omitted if you only use plain ASCII characters,
+but is probably necessary for other cases.</li>
+</ol>
+<pre><code>#!/bin/bash
+export LC_ALL=&lt;locale&gt;
+Rscript -e &quot;patchDVI::knitPDF(&#39;$1&#39;,\
+    envir = globalenv())&quot;</code></pre>
+<ol start="3" style="list-style-type: lower-alpha">
+<li>To use with R Markdown, create a file called
+<code>Library/TeXShop/Engines/markdown.engine</code> in your home
+directory, and give it executable permissions. Replace
+<code>&lt;locale&gt;</code> with your locale string,
+e.g. <code>en_CA.UTF-8</code> for Canadian English using UTF-8 encoding.
+The locale line can be omitted if you only use plain ASCII characters,
+but is probably necessary for other cases.</li>
+</ol>
+<pre><code>#!/bin/bash
+export LC_ALL=&lt;locale&gt;
+Rscript -e &quot;patchDVI::renderPDF(&#39;$1&#39;,\
+  envir = globalenv())&quot;</code></pre>
+<ol start="4" style="list-style-type: lower-alpha">
+<li>For other vignette engines, use a <code>weave</code> argument in the
+above, as appropriate.</li>
+</ol></li>
+<li>Install the <code>patchDVI</code> package into R.</li>
+<li>When editing a <code>.Rnw</code> file in TeXShop, choose the knitr
+or Sweave engine from the menu; for <code>.Rmd</code> files, use the
+markdown engine.</li>
+<li>If you have multiple files in your project, your main file must be a
+<code>.Rnw</code> file (e.g. <code>Main.Rnw</code>) which lists all
+<code>.Rnw</code> files in a <code>.SweaveFiles</code> variable, and you
+need to add the line</li>
+</ol>
+<pre><code>%!TEX root = Main.Rnw</code></pre>
+<p>to each subordinate file. 6. For Sweave, add the
+<code>\SweaveOpts{concordance=TRUE}</code> line to your document. For
+knitr, add a code chunk similar to this:</p>
+<pre><code> &lt;&lt;results=&#39;asis&#39;&gt;&gt;=
+ patchDVI::useknitr()
+ @</code></pre>
+<p>somewhere near the start of your document.</p>
+<p>The TeXShop previewer supports SyncTeX; you right click in the
+preview, and choose Sync from the menu to jump to your source
+location.</p>
+</div>
+<div id="using-patchdvi-with-texworks" class="section level2">
+<h2>Using <code>patchDVI</code> with TeXworks</h2>
+<p>TeXworks is an editor for multiple platforms, somewhat similar to
+TeXShop. These instructions have been tested in version 0.4.5, with
+MikTeX 2.9 on Windows, and version 0.6.2 from MacTeX on MacOS.</p>
+<p>NB: Some versions of TeXworks had a bug in setting the
+<code>HOME</code> directory of the user. With those versions, R will not
+find a locally installed copy of <code>patchDVI</code>. To work around
+the bug, set the <code>R_USER</code> environment variable to your
+Windows home directory, e.g. <code>R_USER=C:/Users/Murdoch</code>.</p>
+<p>TeXworks can work with the <code>patchDVI</code> project management
+features using a script to tell it to process the current file through
+knitr/Sweave, but preview the main file. See the instructions below for
+my current best attempt at such a script. It can also use the TeXShop
+approach of specifying the TEX root file to be a <code>.Rnw</code>
+file.</p>
+<p>The instructions are given first for Sweave, then below for
+knitr.</p>
+<ol style="list-style-type: decimal">
+<li>Add a new <code>SweavePDF</code> command: In
+<code>Edit | Preferences | Typesetting</code> click on the
+<code>+</code> sign near the bottom. Set the name of the tool to be
+<code>SweavePDF</code>. Set the program to <code>Rscript</code>, and add
+two arguments, one per line:
+<ol style="list-style-type: lower-alpha">
+<li><code>-e</code></li>
+<li><code>patchDVI::SweavePDF(&#39;$fullname&#39;)</code></li>
+</ol></li>
+<li>Install the <code>patchDVI</code> package into R.</li>
+<li>Tell TeXworks to open Sweave files by editing the file pattern
+configuration file <code>texworks-config.txt</code>. This file is found
+via the <code>Help | Settings and Resources... | Resources</code> menu
+entry. I have this line there:</li>
+</ol>
+<pre><code>file-open-filter:   TeX documents (*.Rnw *.Rmd *.tex)</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>When editing a <code>.Rnw</code> file in TeXworks, choose the
+<code>SweavePDF</code> engine from the menu.</li>
+<li>Add the <code>\SweaveOpts{concordance=TRUE}</code> line to your
+document.</li>
+<li>If you are using the project management features of
+<code>patchDVI</code> and are editing a subordinate file, TeXworks will
+not open or update the PDF preview after it processes changes. There are
+four workarounds for this.</li>
+</ol>
+<p>The simplest is to manually open the <code>.pdf</code> file the first
+time. After that it will be updated automatically. Unfortunately, if you
+happen to be editing the main file, the <code>.pdf</code> will be opened
+automatically, and then updates won’t happen if you later edit a
+subordinate file.</p>
+<p>The next simplest is the TeXShop approach: include a line</p>
+<pre><code>%!TEX root = Main.Rnw</code></pre>
+<p>near the top of the file, and make sure that <code>Main.Rnw</code>
+refers to all subordinate Sweave files.</p>
+<p>To use TeXworks with knitr, the instructions are very similar to
+those above, but with two changes.</p>
+<p>In step 1, replace the second line of the command (the
+<code>SweavePDF()</code> call) with the following longer command, all on
+one line:</p>
+<pre><code>patchDVI::knitPDF(&#39;$fullname&#39;, envir = globalenv())</code></pre>
+<p>In step 5, insert the following code chunk into your file:</p>
+<pre><code> &lt;&lt;results=&#39;asis&#39;&gt;&gt;=
+ patchDVI::useknitr()
+ @</code></pre>
+<p>To use TeXworks with R Markdown, make these changes:</p>
+<p>In step 1, replace the second line of the command (the
+<code>SweavePDF()</code> call) with the following:</p>
+<pre><code>patchDVI::renderPDF(&#39;$fullname&#39;, envir = globalenv(), output_format = &quot;patchDVI::pdf_documentC&quot;)</code></pre>
+</div>
+<div id="using-patchdvi-with-winedt" class="section level2">
+<h2>Using <code>patchDVI</code> with WinEdt</h2>
+<p>WinEdt is a Windows editor with LaTeX support. The configuration
+options have changed a number of times; I do not know how to implement
+these instructions in the latest version. These instructions apply to
+version 5.5, and assume you are using it with MikTeX.</p>
+<ol style="list-style-type: decimal">
+<li>In <code>Options -- Execution Modes</code> choose
+<code>Texify</code>, and click on <code>Browse for Executable</code>.
+Find the <code>Rscript</code> executable in your R installation,
+directory <code>bin/i386</code> or <code>bin/x64</code>, and choose it.
+In the Switches line, put</li>
+</ol>
+<pre><code>-e</code></pre>
+<p>and in the Parameters line, put</p>
+<pre><code>&quot;patchDVI::SweaveMiktex(&#39;%n%t&#39;, &#39;%N.tex&#39;)&quot;</code></pre>
+<p>The quotes are necessary! 2. Do the same for the PDF Texify command,
+replacing <code>SweaveMiktex</code> with <code>SweavePDFMiktex</code>.
+3. In <code>Options -- Execution modes</code>, make sure
+<code>Start Viewer</code> and <code>Forward Search</code> are selected
+for LaTeX and PDF LaTeX.</p>
+<p>When you preview a file in <code>yap</code>, double clicking should
+jump back to the editor. If it doesn’t (or it opens the wrong editor),
+while you’re in <code>yap</code> choose
+<code>View -- Options -- Inverse DVI search</code>. You should see
+<code>WinEdt (auto-detected)</code> as an option; if so, select it. If
+not, create a new entry for WinEdt, and for the command line, put in</p>
+<pre><code>&quot;path\to\winedt.exe&quot; &quot;[Open(|%f|);SelPar(%l,8)]&quot;</code></pre>
+<p>after editing the path as necessary.</p>
+</div>
+<div id="using-patchdvi-with-rstudio" class="section level2">
+<h2>Using <code>patchDVI</code> with RStudio</h2>
+<p>RStudio is a very nice front end for working in R and with individual
+<code>.Rnw</code> or Markdown files. If you are using it, I’m going to
+assume you’re using knitr as well, and these instructions have been
+worked out for that combination.</p>
+<p>RStudio is less flexible than the other editors for specifying
+customized processing of a file, so these instructions were worked out
+assuming that you already have it configured for knitr. It is probably
+possible to do something similar for Sweave; I just haven’t tried.</p>
+<p>You need to set up your individual chapter files as for
+TeXShop/TeXworks, i.e. with a</p>
+<pre><code>%!TEX root = Main.Rnw</code></pre>
+<p>comment at the top of each. This tells RStudio to run knitr on the
+main file when you click Compile PDF. (It will also work if you use the
+knitr style</p>
+<pre><code>%!RNW root = Main.Rnw</code></pre>
+<p>but then your files won’t work in TeXShop/TeXworks.)</p>
+<p>In the main file, you need a code chunk containing a line to set the
+<code>.SweaveFiles</code> variable naming all chapter files (but not the
+main file), and then running <code>knitInRStudio()</code>:</p>
+<pre><code>.SweaveFiles &lt;- c(&quot;a.Rnw&quot;, &quot;b.Rnw&quot;)
+patchDVI::knitInRStudio()</code></pre>
+<p>It is safe to put these lines in your file even if you sometimes
+process it in a different way: if you are not in RStudio,
+<code>knitInRStudio()</code> does nothing.</p>
+<p>One remaining issue with this approach is that you won’t see the
+knitr progress messages from knitting the chapter files. If you want to
+see those messages, add the chunk option <code>childOutput = TRUE</code>
+to the code chunk holding this code.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Allaire2022" class="csl-entry">
+Allaire, JJ, Yihui Xie, Jonathan McPherson, Javier Luraschi, Kevin
+Ushey, Aron Atkins, Hadley Wickham, Joe Cheng, Winston Chang, and
+Richard Iannone. 2022. <em>Rmarkdown: Dynamic Documents for r</em>. <a href="https://github.com/rstudio/rmarkdown">https://github.com/rstudio/rmarkdown</a>.
+</div>
+<div id="ref-Kew10" class="csl-entry">
+Kew, Jonathan. 2008. <span>“<span>TeXworks</span>: Lowering the Barrier
+to Entry.”</span> <em>TUGBoat</em> 29: 362–64. <a href="http://tug.org/texworks/">http://tug.org/texworks/</a>.
+</div>
+<div id="ref-Laurens08" class="csl-entry">
+Laurens, Jerôme. 2008. <span>“Direct and Reverse Synchronization with
+<span>SyncTEX</span>.”</span> <em>TUGBoat</em> 29: 365–71.
+</div>
+<div id="ref-Leisch02" class="csl-entry">
+Leisch, Friedrich. 2002. <span>“Sweave: Dynamic Generation of
+Statistical Reports Using Literate Data Analysis.”</span> In
+<em>Compstat 2002 — Proceedings in Computational Statistics</em>, edited
+by Wolfgang Härdle and Bernd Rönz, 575–80. Physica Verlag, Heidelberg.
+</div>
+<div id="ref-Schenk10" class="csl-entry">
+Schenk, Christian. 2010. <span>“About <span>MikTeX</span>.”</span> <a href="https://miktex.org/about">https://miktex.org/about</a>.
+</div>
+<div id="ref-Xie2013" class="csl-entry">
+Xie, Yihui. 2013. <em>Dynamic Documents with <span>R</span> and
+Knitr</em>. Chapman; Hall/CRC. <a href="http://yihui.org/knitr/">http://yihui.org/knitr/</a>.
+</div>
+<div id="ref-Xie2022" class="csl-entry">
+Xie, Yihui, J. J. Allaire, and Garrett Grolemund. 2018. <em>R Markdown:
+The Definitive Guide</em>. Boca Raton, Florida: Chapman; Hall/CRC. <a href="https://bookdown.org/yihui/rmarkdown">https://bookdown.org/yihui/rmarkdown</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
