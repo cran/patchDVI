@@ -12,7 +12,7 @@
 
 <meta name="author" content="Duncan Murdoch" />
 
-<meta name="date" content="2023-03-14" />
+<meta name="date" content="2024-10-20" />
 
 <title>The patchDVI package</title>
 
@@ -51,7 +51,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -62,7 +62,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -150,6 +150,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
+margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -362,7 +363,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">The patchDVI package</h1>
 <h4 class="author">Duncan Murdoch</h4>
-<h4 class="date">2023-03-14</h4>
+<h4 class="date">2024-10-20</h4>
 
 
 <div id="TOC">
@@ -467,29 +468,29 @@ section describes some common ones for Sweave/knitr. Section <a href="#r-markdow
 Markdown.</p>
 <p>In all cases the package needs to be installed first; the current
 release is on CRAN and can be installed using</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
 <p>Source code is maintained on Github and the latest development
 version can be installed using</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>With <code>.Rnw</code> files for knitr or Sweave, the document also
 needs to have an option set to produce the “concordances” (links between
 the <code>.Rnw</code> source and the <code>.tex</code> output of
 knitr/Sweave). If you are using knitr, include these lines in a code
 chunk in your document:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>opts_knit<span class="sc">$</span><span class="fu">set</span>(<span class="at">concordance =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>opts_knit<span class="sc">$</span><span class="fu">set</span>(<span class="at">concordance =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>For Sweave, put these lines outside of a code chunk near the start of
 your document:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">\usepackage</span>{<span class="ex">Sweave</span>}</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">\SweaveOpts</span>{concordance=TRUE}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">\usepackage</span>{<span class="ex">Sweave</span>}</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">\SweaveOpts</span>{concordance=TRUE}</span></code></pre></div>
 <p>The simplest way to proceed is from within R. Assuming
 <code>doc.Rnw</code> is the knitr/Sweave document to process and it is
 in the current working directory, run</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">knitPDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">knitPDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
 <p>or</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">SweavePDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(patchDVI)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">SweavePDF</span>(<span class="st">&quot;doc.Rnw&quot;</span>)</span></code></pre></div>
 <p>This runs <code>doc.Rnw</code> through knitr/Sweave, runs any other
 chapters in the project through knitr/Sweave, then runs the main
 <code>.tex</code> file (typically <code>doc.tex</code>, but not
@@ -536,7 +537,7 @@ this is followed by a mix of text in a Markdown dialect and code in R or
 another language.</p>
 <p>To use <code>patchDVI</code> with R Markdown, you will currently need
 the development version. This may be installed using</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>, <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;dmurdoch/patchDVI&quot;</span>, <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>With that version installed, you then change the <code>output</code>
 setting in the YAML. If it was <code>pdf_document</code>, use</p>
 <pre><code>output: patchDVI::pdf_documentC</code></pre>
@@ -835,7 +836,7 @@ file when it makes its changes.</p>
 <h2>Patching <code>.html</code> Files</h2>
 <p>If R Markdown has an HTML target, the concordances are embedded by
 Pandoc in <code>span</code> and <code>div</code> markup, e.g.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">&lt;span</span> <span class="er">data-pos</span><span class="ot">=</span><span class="st">&quot;sample.knit.md@13:1-13:5&quot;</span><span class="kw">&gt;</span>This<span class="kw">&lt;/span&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">span</span><span class="ot"> data-pos</span><span class="op">=</span><span class="st">&quot;sample.knit.md@13:1-13:5&quot;</span><span class="dt">&gt;</span>This<span class="dt">&lt;/</span><span class="kw">span</span><span class="dt">&gt;</span></span></code></pre></div>
 <p>The driver reads the <code>data-pos</code> attributes, works out the
 corresponding line from the true source file, and rewrites the
 concordances using the concordance record in a comment as described at
@@ -1003,7 +1004,7 @@ Optionally, it can update them using <code>update.packages()</code>,
 load them, or attach them to the search list. For example, this document
 uses no packages other than <code>patchDVI</code> itself, so it could
 have</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>patchDVI<span class="sc">::</span><span class="fu">needsPackages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>patchDVI<span class="sc">::</span><span class="fu">needsPackages</span>(<span class="st">&quot;patchDVI&quot;</span>)</span></code></pre></div>
 <p>near the start to ensure it is available, if this wasn’t a
 nonsensical statement. (Why would you be able to run it if
 <code>patchDVI</code> wasn’t already installed?)</p>
@@ -1101,7 +1102,7 @@ location.</p>
 <h2>Using <code>patchDVI</code> with TeXworks</h2>
 <p>TeXworks is an editor for multiple platforms, somewhat similar to
 TeXShop. These instructions have been tested in version 0.4.5, with
-MikTeX 2.9 on Windows, and version 0.6.2 from MacTeX on MacOS.</p>
+MikTeX 2.9 on Windows, and version 0.6.8 on MacOS.</p>
 <p>NB: Some versions of TeXworks had a bug in setting the
 <code>HOME</code> directory of the user. With those versions, R will not
 find a locally installed copy of <code>patchDVI</code>. To work around
@@ -1230,7 +1231,7 @@ to the code chunk holding this code.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-Allaire2022" class="csl-entry">
 Allaire, JJ, Yihui Xie, Jonathan McPherson, Javier Luraschi, Kevin
 Ushey, Aron Atkins, Hadley Wickham, Joe Cheng, Winston Chang, and
@@ -1238,7 +1239,7 @@ Richard Iannone. 2022. <em>Rmarkdown: Dynamic Documents for r</em>. <a href="htt
 </div>
 <div id="ref-Kew10" class="csl-entry">
 Kew, Jonathan. 2008. <span>“<span>TeXworks</span>: Lowering the Barrier
-to Entry.”</span> <em>TUGBoat</em> 29: 362–64. <a href="http://tug.org/texworks/">http://tug.org/texworks/</a>.
+to Entry.”</span> <em>TUGBoat</em> 29: 362–64. <a href="https://tug.org/texworks/">https://tug.org/texworks/</a>.
 </div>
 <div id="ref-Laurens08" class="csl-entry">
 Laurens, Jerôme. 2008. <span>“Direct and Reverse Synchronization with

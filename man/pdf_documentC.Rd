@@ -4,7 +4,7 @@
 R Markdown driver to add concordance
 }
 \description{
-This drivers replace the like-named \pkg{rmarkdown}
+The \code{pdf_documentC} driver replaces the like-named \pkg{rmarkdown}
 driver with one that outputs Commonmark rather than Pandoc Markdown.
 Commonmark is a dialect of Markdown for which the Pandoc driver
 for Commonmark supports output of source position information.
@@ -36,8 +36,13 @@ Other arguments to pass to the base driver.
 }
 }
 \details{
-This driver modifies the standard \pkg{rmarkdown} driver \code{\link[rmarkdown]{pdf_document}}, but uses Commonmark
-and adds concordances.
+This driver modifies the standard \pkg{rmarkdown} driver
+\code{\link[rmarkdown]{pdf_document}} to use Commonmark
+and add concordances.
+
+The \code{latex_formatC} driver requires a currently
+unreleased version of the \code{commonmark} package, with
+version higher than 1.9.0.
 }
 \value{
 An R Markdown output format object which will add concordance
